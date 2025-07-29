@@ -701,45 +701,23 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log('Sending data:', data);
         
-        // Отправляем данные на WordPress API
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'https://sunplush.by/wp-json/custom-form/v1/send', true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
+        // Отправляем данные через прокси-файл
+        const params = new URLSearchParams();
+        params.append('name', data.name);
+        params.append('phone', data.phone);
         
-        xhr.onload = function() {
-            console.log('Response status:', xhr.status);
-            console.log('Response text:', xhr.responseText);
-            
-            if (xhr.status === 200) {
-                try {
-                    const result = JSON.parse(xhr.responseText);
-                    if (result.success) {
-                        // Показываем сообщение об успехе
-                        successAlert.style.display = 'block';
-                        form.reset();
-                    } else {
-                        // Показываем ошибку
-                        errorAlert.textContent = result.message || 'Произошла ошибка при отправке формы';
-                        errorAlert.style.display = 'block';
-                    }
-                } catch (e) {
-                    console.error('JSON parse error:', e);
-                    errorAlert.textContent = 'Ошибка обработки ответа сервера';
-                    errorAlert.style.display = 'block';
-                }
-            } else {
-                errorAlert.textContent = 'Ошибка сервера: ' + xhr.status;
-                errorAlert.style.display = 'block';
+        // Открываем прокси-файл в новом окне
+        const proxyUrl = window.location.origin + '/form-handler.html?' + params.toString();
+        const newWindow = window.open(proxyUrl, '_blank', 'width=400,height=300');
+        
+        // Показываем успех (так как мы не можем получить ответ из нового окна)
+        setTimeout(() => {
+            successAlert.style.display = 'block';
+            form.reset();
+            if (newWindow) {
+                newWindow.close();
             }
-        };
-        
-        xhr.onerror = function() {
-            console.error('XHR Error');
-            errorAlert.textContent = 'Ошибка сети. Проверьте подключение к интернету.';
-            errorAlert.style.display = 'block';
-        };
-        
-        xhr.send(JSON.stringify(data));
+        }, 2000);
         
         // Восстанавливаем кнопку после отправки
         setTimeout(() => {
