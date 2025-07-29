@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Form Handler</title>
+</head>
+<body>
+    <script>
+        // Получаем данные из URL параметров
+        const urlParams = new URLSearchParams(window.location.search);
+        const name = urlParams.get('name');
+        const phone = urlParams.get('phone');
+        
+        if (name && phone) {
+            // Отправляем данные на WordPress API
+            fetch('https://sunplush.by/wp-json/custom-form/v1/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: name,
+                    phone: phone
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    document.body.innerHTML = '<h1>Успешно отправлено!</h1><p>Спасибо за вашу заявку! В скором времени наш менеджер свяжется с вами.</p>';
+                } else {
+                    document.body.innerHTML = '<h1>Ошибка</h1><p>' + (result.message || 'Произошла ошибка при отправке формы') + '</p>';
+                }
+            })
+            .catch(error => {
+                document.body.innerHTML = '<h1>Ошибка</h1><p>Произошла ошибка при отправке формы. Попробуйте еще раз.</p>';
+            });
+        } else {
+            document.body.innerHTML = '<h1>Ошибка</h1><p>Не указаны необходимые данные.</p>';
+        }
+    </script>
+</body>
+</html> 
