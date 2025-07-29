@@ -701,29 +701,36 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log('Sending data:', data);
         
-        // Отправляем данные через прокси-файл
-        const params = new URLSearchParams();
-        params.append('name', data.name);
-        params.append('phone', data.phone);
-        
-        // Открываем прокси-файл в новом окне
-        const proxyUrl = window.location.origin + '/form-handler.html?' + params.toString();
-        const newWindow = window.open(proxyUrl, '_blank', 'width=400,height=300');
-        
-        // Показываем успех (так как мы не можем получить ответ из нового окна)
-        setTimeout(() => {
-            successAlert.style.display = 'block';
-            form.reset();
-            if (newWindow) {
-                newWindow.close();
+        // Отправляем данные напрямую на WordPress PHP файл
+        fetch('https://sunplush.by/contact-form.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                // Показываем сообщение об успехе
+                successAlert.style.display = 'block';
+                form.reset();
+            } else {
+                // Показываем ошибку
+                errorAlert.textContent = result.message || 'Произошла ошибка при отправке формы';
+                errorAlert.style.display = 'block';
             }
-        }, 2000);
-        
-        // Восстанавливаем кнопку после отправки
-        setTimeout(() => {
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            errorAlert.textContent = 'Произошла ошибка при отправке формы. Попробуйте еще раз.';
+            errorAlert.style.display = 'block';
+        })
+        .finally(() => {
+            // Восстанавливаем кнопку
             submitButton.disabled = false;
             submitButton.textContent = 'ОТПРАВИТЬ';
-        }, 1000);
+        });
     });
 });
 </script>
